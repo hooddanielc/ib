@@ -811,6 +811,8 @@ def main():
              "target will be built in the output tree.")
     return parser.parse_args()
   def MakeAbspath(root, argpath):
+    print 'root', root
+    print 'argpath', argpath
     return (
         argpath if os.path.isabs(argpath) else
         os.path.abspath(os.path.join(root, argpath)))
