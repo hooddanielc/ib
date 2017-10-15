@@ -258,6 +258,8 @@ class LinkerJob(Job):
         [ out_flag_prefix + rule.outputs[0] ] + list(rule.dependencies) +
         [ '-L' + lib_dir for lib_dir in planner.cfg.link.lib_dirs ] +
         [ lib_flag_prefix + lib for lib in planner.cfg.link.libs ] +
+        (['/PDB:"' + rule.outputs[0] + '.pdb"'] if platform.system() == 'Windows' else []) +
+        (['/IMPLIB:"' + rule.outputs[0] + '.lib"'] if platform.system() == 'Windows' else []) +
         ([ '-Wl,-Bstatic' ] if platform.system() != 'Darwin' and platform.system() != 'Windows' else []) +
         [ '-l' + lib for lib in planner.cfg.link.static_libs ] +
         ([ '-Wl,-Bdynamic' ] if platform.system() != 'Darwin' and platform.system() != 'Windows' else []))
