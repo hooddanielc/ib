@@ -798,7 +798,7 @@ class IbRunner(object):
   default_cfg = 'debug'
 
   def __init__(self, args):
-    self.args = args
+    super(IbRunner, self).args = args
 
   @staticmethod
   def GetDefaultSourceRoot():
@@ -909,7 +909,7 @@ class IbRunner(object):
     return args
 
   def GetTargets(self):
-    args = self.args
+    args = super(IbRunner, self).args
     targets = []
     if args.test_all:
       for target in args.targets:
@@ -922,13 +922,13 @@ class IbRunner(object):
 
     after_glob = []
     for target in targets:
-      abs_path = os.path.join(self.args.src_root, target)
+      abs_path = os.path.join(super(IbRunner, self).args.src_root, target)
       base = os.path.splitext(abs_path)[0]
       ext = os.path.splitext(abs_path)[1]
       globbed_targets = [p for p in glob.glob(base) if os.path.isfile(p)]
       if len(globbed_targets) > 0:
         for glob_path in globbed_targets:
-          rel = os.path.relpath(glob_path, start=self.args.src_root)
+          rel = os.path.relpath(glob_path, start=super(IbRunner, self).args.src_root)
           new_target = os.path.splitext(rel)[0] + ext
           after_glob.append(new_target)
       else:
@@ -936,9 +936,9 @@ class IbRunner(object):
     return after_glob
 
   def GeneratePlans(self):
-    args = self.args
+    args = super(IbRunner, self).args
     cfg = Cfg(args.cfg_root, args.cfg)
-    targets = self.GetTargets()
+    targets = super(IbRunner, self).GetTargets()
     planner = Planner(
         cfg=cfg,
         src_root=args.src_root,
@@ -972,7 +972,7 @@ class IbRunner(object):
 
   def RunWaves(self, plans):
     success = True
-    args = self.args
+    args = super(IbRunner, self).args
     waves = plans['waves']
     planner = plans['planner']
     for wave_number, wave in enumerate(waves, start=1):
@@ -1002,12 +1002,12 @@ class IbRunner(object):
     # Check if inotify exists
     if not inotify_exists:
       raise Exception('inotify is not installed. run pip install pyinotify')
-    self.watched_plans = plans
+    super(IbRunner, self).watched_plans = plans
 
     # try finding files listed in any old or new waves
     def GetAffectedTargets(changes):
       affected = []
-      for target, wave in self.watched_plans['waves_by_target'].items():
+      for target, wave in super(IbRunner, self).watched_plans['waves_by_target'].items():
         sources = planner.GetAllWaveSources(wave)
         for change in changes:
           if change in sources:
@@ -1022,9 +1022,9 @@ class IbRunner(object):
         print('Rebuild: ' + target)
       print('-------------------------------')
       success = True
-      specs_by_target = self.watched_plans['specs_by_target']
+      specs_by_target = super(IbRunner, self).watched_plans['specs_by_target']
       specs = [specs_by_target[t] for t in targets]
-      waves = list(self.watched_plans['planner'].YieldWaves(specs))
+      waves = list(super(IbRunner, self).watched_plans['planner'].YieldWaves(specs))
       planner = plans['planner']
       for wave_number, wave in enumerate(waves, start=1):
         script = planner.ConvWaveToScript(wave)
@@ -1036,7 +1036,7 @@ class IbRunner(object):
       print('Wating for changes...')
 
       # always generate new plans for all targets
-      self.watched_plans = self.GeneratePlans()
+      super(IbRunner, self).watched_plans = super(IbRunner, self).GeneratePlans()
       return success
 
     def OnSourcesChanged(changes):
@@ -1044,13 +1044,13 @@ class IbRunner(object):
       if len(affected_targets) > 0:
         return Rebuild(affected_targets)
       # did a new file create a new target?
-      self.watched_plans = self.GeneratePlans()
+      super(IbRunner, self).watched_plans = super(IbRunner, self).GeneratePlans()
       affected_targets = GetAffectedTargets(changes)
       if len(affected_targets) > 0:
         return Rebuild(affected_targets)
 
-    planner = self.watched_plans['planner']
-    waves = self.watched_plans['waves']
+    planner = super(IbRunner, self).watched_plans['planner']
+    waves = super(IbRunner, self).watched_plans['waves']
     sources = planner.GetAllWaveSources(waves)
     changes = set()
 
@@ -1092,35 +1092,35 @@ class IbRunner(object):
     notifier.loop(callback=on_loop)
 
   def RunBuildTasks(self, plans):
-    args = self.args
+    args = super(IbRunner, self).args
     planner = plans['planner']
     waves = plans['waves']
-    success = self.RunWaves(plans)
+    success = super(IbRunner, self).RunWaves(plans)
     if success and (args.test_all or args.test):
-      success = self.RunTestAll(plans)
+      success = super(IbRunner, self).RunTestAll(plans)
     return success
 
   def RunAllTasks(self):
-    args = self.args
-    plans = self.GeneratePlans()
+    args = super(IbRunner, self).args
+    plans = super(IbRunner, self).GeneratePlans()
     if args.print_args:
       for key in [ 'src_root', 'out_root', 'cfg_root', 'cfg' ]:
         print('%s = %r' % (key, getattr(args, key)))
     if args.print_cfg:
       print(Cfg(args.cfg_root, args.cfg))
     if args.print_script:
-      self.PrintScript(plans)
+      super(IbRunner, self).PrintScript(plans)
     if args.no_run:
         return 0
-    success = self.RunBuildTasks(plans)
+    success = super(IbRunner, self).RunBuildTasks(plans)
     if args.watch:
-      success = self.RunWatchTask(plans)
+      success = super(IbRunner, self).RunWatchTask(plans)
     return success
 
   def Run(self):
     try:
-      args = self.args
-      success = self.RunAllTasks()
+      args = super(IbRunner, self).args
+      success = super(IbRunner, self).RunAllTasks()
       return 0 if success else -1
     except IbError as err:
       print('** ib error **')
