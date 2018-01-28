@@ -798,7 +798,7 @@ class IbRunner(object):
   default_cfg = 'debug'
 
   def __init__(self, args):
-    super(IbRunner, self).args = args
+    self.args = args
 
   @staticmethod
   def GetDefaultSourceRoot():
